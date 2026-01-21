@@ -1,0 +1,11 @@
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  connectionString:
+    "postgresql://lucaas_database_user:RIiu31hyydcE5amw0Zg5reunwxKm6E2D@dpg-d5obsnshg0os73fhank0-a.oregon-postgres.render.com/lucaas_database",
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+module.exports = pool;
