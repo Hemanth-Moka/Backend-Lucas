@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./api/auth");
 
 const app = express();
 
@@ -13,4 +13,3 @@ app.use("/api/auth", authRoutes);
 app.listen(8080, () => {
   console.log("Server running on http://localhost:8080");
 });
-    
