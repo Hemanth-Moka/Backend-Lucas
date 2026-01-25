@@ -1,24 +1,9 @@
-// const express = require("express");
-// const cors = require("cors");
-
-// const authRoutes = require("./api/auth");
-
-// const app = express();
-
-// app.use(cors({ origin: "http://localhost:3000", credentials: true }));
-// app.use(express.json());
-
-// app.use("/api/auth", authRoutes);
-
-// app.listen(8080, () => {
-//   console.log("Server running on http://localhost:8080");
-// });
-
-
 const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./api/auth");
+const wishlistRoutes = require("./api/wishlist"); // ✅ FIX
+const cartRoutes = require("./api/cart");         // ✅ FIX
 
 const app = express();
 
@@ -36,40 +21,12 @@ app.use(
   })
 );
 
+/* ROUTES */
 app.use("/api/auth", authRoutes);
-app.use("/api/wishlist", wishlist);
-app.use("/api/cart", cart);
-
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/cart", cartRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
-
-
-// const express = require("express");
-// const cors = require("cors");
-
-// const authRoutes = require("./api/auth");
-
-// const app = express();
-
-// app.use(express.json());
-
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:3000",
-//       "http://localhost:5173",
-//       "https://lucaas-website.vercel.app",
-//     ],
-//     credentials: true,
-//   })
-// );
-
-// app.use("/api/auth", authRoutes);
-
-// const PORT = process.env.PORT || 8080;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
