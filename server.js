@@ -37,6 +37,9 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/cart", cartRoutes);
+
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
