@@ -37,8 +37,8 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlist);
+app.use("/api/cart", cart);
 
 
 const PORT = process.env.PORT || 8080;
