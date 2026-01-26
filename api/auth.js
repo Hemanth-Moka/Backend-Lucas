@@ -5,6 +5,15 @@ const pool = require("../db");
 const router = express.Router();
 
 /* =========================
+   UTILITY: ORDER ID GENERATOR
+========================= */
+const generateOrderId = () => {
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const year = new Date().getFullYear();
+  return `ORD-${random}-${year}`;
+};
+
+/* =========================
    REGISTER
 ========================= */
 router.post("/register", async (req, res) => {
@@ -43,15 +52,16 @@ router.post("/register", async (req, res) => {
 ========================= */
 router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body; // username can be email OR username
+    const { username, password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ message: "Missing credentials" });
     }
 
-    // Find user by username OR email
     const result = await pool.query(
-      "SELECT id, username, email, password, role FROM users WHERE username=$1 OR email=$1",
+      `SELECT id, username, email, password, role, order_id
+       FROM users
+       WHERE username=$1 OR email=$1`,
       [username]
     );
 
@@ -61,19 +71,29 @@ router.post("/login", async (req, res) => {
 
     const user = result.rows[0];
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
-    // Success
+    let orderId = user.order_id;
+
+    // ✅ Generate order ID ONLY for non-admin users
+    if (user.role !== "admin" && !orderId) {
+      orderId = generateOrderId();
+
+      await pool.query(
+        "UPDATE users SET order_id=$1 WHERE id=$2",
+        [orderId, user.id]
+      );
+    }
+
     return res.status(200).json({
       message: "Login successful",
       role: user.role,
       username: user.username,
       email: user.email,
+      orderId: user.role !== "admin" ? orderId : null,
     });
   } catch (err) {
     console.error(err);
