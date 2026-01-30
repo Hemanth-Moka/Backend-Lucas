@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
-/* CREATE ORDER */
+/* ================= CREATE ORDER ================= */
 router.post("/", async (req, res) => {
   const o = req.body;
 
   try {
     await pool.query("BEGIN");
 
+    // INSERT ORDER
     await pool.query(
       `INSERT INTO orders
       (order_id,email,first_name,last_name,address,city,country,zip_code,phone,
@@ -35,6 +36,7 @@ router.post("/", async (req, res) => {
       ]
     );
 
+    // INSERT ITEMS
     for (const item of o.items || []) {
       await pool.query(
         `INSERT INTO order_items
@@ -60,11 +62,19 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* GET ORDERS */
+/* ================= GET ORDERS (ONLY MY ORDERS) ================= */
 router.get("/", async (req, res) => {
   try {
+    const email = req.query.email;
+
+    if (!email) {
+      return res.status(400).send("Email is required");
+    }
+
+    // FILTER BY EMAIL
     const ordersRes = await pool.query(
-      "SELECT * FROM orders ORDER BY id DESC"
+      "SELECT * FROM orders WHERE email=$1 ORDER BY id DESC",
+      [email]
     );
 
     const result = [];
