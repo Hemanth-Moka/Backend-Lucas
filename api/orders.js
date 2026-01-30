@@ -10,7 +10,7 @@ router.post("/", async (req, res) => {
     await pool.query("BEGIN");
 
     // extra safety for email
-    const email = o.shippingAddress?.email?.trim() || null;
+    const email = o.userEmail?.trim() || null;
 
     await pool.query(
       `INSERT INTO orders
