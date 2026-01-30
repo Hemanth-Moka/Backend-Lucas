@@ -16,14 +16,14 @@ router.post("/", async (req, res) => {
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
       [
         o.orderId,
-        o.shippingAddress.email,
-        o.shippingAddress.firstName,
-        o.shippingAddress.lastName,
-        o.shippingAddress.address,
-        o.shippingAddress.city,
-        o.shippingAddress.country,
-        o.shippingAddress.zipCode,
-        o.shippingAddress.phone,
+        o.shippingAddress?.email,
+        o.shippingAddress?.firstName,
+        o.shippingAddress?.lastName,
+        o.shippingAddress?.address,
+        o.shippingAddress?.city,
+        o.shippingAddress?.country,
+        o.shippingAddress?.zipCode,
+        o.shippingAddress?.phone,
         o.paymentMethod,
         o.subtotal,
         o.shipping,
@@ -35,7 +35,7 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    for (const item of o.items) {
+    for (const item of o.items || []) {
       await pool.query(
         `INSERT INTO order_items
          (order_id,product_id,name,price,quantity,selected_size)
@@ -70,19 +70,49 @@ router.get("/", async (req, res) => {
     const result = [];
 
     for (const o of ordersRes.rows) {
-      const items = await pool.query(
+      const itemsRes = await pool.query(
         "SELECT * FROM order_items WHERE order_id=$1",
         [o.order_id]
       );
 
+      const items = itemsRes.rows.map((i) => ({
+        id: i.product_id,
+        name: i.name,
+        price: Number(i.price),
+        quantity: Number(i.quantity),
+        selectedSize: i.selected_size,
+      }));
+
       result.push({
-        ...o,
-        items: items.rows,
+        orderId: o.order_id,
+        orderDate: o.order_date,
+        deliveryDate: o.delivery_date,
+        status: o.status,
+        paymentMethod: o.payment_method,
+
+        subtotal: Number(o.subtotal),
+        shipping: Number(o.shipping),
+        tax: Number(o.tax),
+        total: Number(o.total),
+
+        shippingAddress: {
+          email: o.email,
+          firstName: o.first_name,
+          lastName: o.last_name,
+          address: o.address,
+          city: o.city,
+          country: o.country,
+          zipCode: o.zip_code,
+          phone: o.phone,
+        },
+
+        items,
       });
     }
 
     res.json(result);
   } catch (err) {
+    console.error(err);
     res.status(500).send("Error fetching orders");
   }
 });
