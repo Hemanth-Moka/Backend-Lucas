@@ -2,12 +2,15 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
-/* CREATE ORDER */
+/* ================= CREATE ORDER ================= */
 router.post("/", async (req, res) => {
   const o = req.body;
 
   try {
     await pool.query("BEGIN");
+
+    // extra safety for email
+    const email = o.shippingAddress?.email?.trim() || null;
 
     await pool.query(
       `INSERT INTO orders
@@ -16,7 +19,7 @@ router.post("/", async (req, res) => {
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
       [
         o.orderId,
-        o.shippingAddress?.email,
+        email,
         o.shippingAddress?.firstName,
         o.shippingAddress?.lastName,
         o.shippingAddress?.address,
@@ -25,10 +28,10 @@ router.post("/", async (req, res) => {
         o.shippingAddress?.zipCode,
         o.shippingAddress?.phone,
         o.paymentMethod,
-        o.subtotal,
-        o.shipping,
-        o.tax,
-        o.total,
+        Number(o.subtotal),
+        Number(o.shipping),
+        Number(o.tax),
+        Number(o.total),
         o.orderDate,
         o.deliveryDate,
         o.status,
@@ -44,8 +47,8 @@ router.post("/", async (req, res) => {
           o.orderId,
           item.id,
           item.name,
-          item.price,
-          item.quantity,
+          Number(item.price),
+          Number(item.quantity),
           item.selectedSize || null,
         ]
       );
@@ -60,11 +63,12 @@ router.post("/", async (req, res) => {
   }
 });
 
-/* GET ORDERS – ONLY MY ORDERS */
+/* ================= GET ORDERS – ONLY MY ORDERS ================= */
 router.get("/", async (req, res) => {
   try {
-    const email = req.query.email;
+    const email = req.query.email?.trim();
 
+    // if no email → no orders
     if (!email) {
       return res.json([]);
     }
