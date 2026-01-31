@@ -295,4 +295,34 @@ router.get("/admin", async (req, res) => {
   }
 });
 
+
+/* ================= ADMIN – DELETE ORDER ================= */
+router.delete("/:orderId", async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    await pool.query("BEGIN");
+
+    // delete items first (FK safety)
+    await pool.query(
+      "DELETE FROM order_items WHERE order_id=$1",
+      [orderId]
+    );
+
+    // delete main order
+    await pool.query(
+      "DELETE FROM orders WHERE order_id=$1",
+      [orderId]
+    );
+
+    await pool.query("COMMIT");
+
+    res.json({ success: true, message: "Order deleted" });
+  } catch (err) {
+    await pool.query("ROLLBACK");
+    console.error(err);
+    res.status(500).send("Delete failed");
+  }
+});
+
 module.exports = router;
