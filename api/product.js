@@ -3,7 +3,6 @@ const pool = require("../db");
 
 const router = express.Router();
 
-// helper to convert DB → frontend format
 const mapProduct = (p) => ({
   id: p.id,
   name: p.name,
@@ -68,26 +67,20 @@ router.post("/", async (req, res) => {
 // 🔹 Get All Products
 router.get("/", async (req, res) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM products ORDER BY id DESC"
-    );
+    const result = await pool.query("SELECT * FROM products ORDER BY id DESC");
     res.json(result.rows.map(mapProduct));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 🔹 Delete Product
+// 🔹 Delete
 router.delete("/:id", async (req, res) => {
-  try {
-    await pool.query("DELETE FROM products WHERE id=$1", [req.params.id]);
-    res.json({ message: "Product deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  await pool.query("DELETE FROM products WHERE id=$1", [req.params.id]);
+  res.json({ message: "Deleted" });
 });
 
-// 🔹 Update Product
+// 🔹 Update
 router.put("/:id", async (req, res) => {
   try {
     const {
