@@ -3,6 +3,22 @@ const pool = require("../db");
 
 const router = express.Router();
 
+// helper to convert DB → frontend format
+const mapProduct = (p) => ({
+  id: p.id,
+  name: p.name,
+  brand: p.brand,
+  price: p.price,
+  originalPrice: p.original_price,
+  description: p.description,
+  category: p.category,
+  gender: p.gender,
+  sizes: p.sizes,
+  inStock: p.in_stock,
+  bestSeller: p.best_seller,
+  newArrival: p.new_arrival,
+  image: p.image,
+});
 
 // 🔹 Add Product
 router.post("/", async (req, res) => {
@@ -43,13 +59,11 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    res.json(result.rows[0]);
+    res.json(mapProduct(result.rows[0]));
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // 🔹 Get All Products
 router.get("/", async (req, res) => {
@@ -57,12 +71,11 @@ router.get("/", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM products ORDER BY id DESC"
     );
-    res.json(result.rows);
+    res.json(result.rows.map(mapProduct));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // 🔹 Delete Product
 router.delete("/:id", async (req, res) => {
@@ -73,7 +86,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // 🔹 Update Product
 router.put("/:id", async (req, res) => {
@@ -126,11 +138,10 @@ router.put("/:id", async (req, res) => {
       ]
     );
 
-    res.json(result.rows[0]);
+    res.json(mapProduct(result.rows[0]));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;
